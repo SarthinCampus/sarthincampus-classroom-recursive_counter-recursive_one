@@ -1,0 +1,72 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: testing for 3
+      id: testing-for-3
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: testing for 3
+        setup-command: ''
+        command: python3 recursive_counter/main.py
+        input: '3'
+        expected-output: 3\n2\n1\n0
+        comparison-method: contains
+        timeout: 10
+        max-score: 1
+    - name: testing for 0
+      id: testing-for-0
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: testing for 0
+        setup-command: ''
+        command: python3 recursive_counter/main.py
+        input: '0'
+        expected-output: '0'
+        comparison-method: contains
+        timeout: 10
+        max-score: 1
+    - name: testing -5
+      id: testing-5
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: testing -5
+        setup-command: ''
+        command: python3 recursive_counter/main.py
+        input: "-5"
+        expected-output: Error
+        comparison-method: contains
+        timeout: 10
+        max-score: 1
+    - name: testing for non-integer
+      id: testing-for-non-integer
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: testing for non-integer
+        setup-command: ''
+        command: python3 recursive_counter/main.py
+        input: abc
+        expected-output: Error
+        comparison-method: contains
+        timeout: 10
+        max-score: 1
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TESTING-FOR-3_RESULTS: "${{steps.testing-for-3.outputs.result}}"
+        TESTING-FOR-0_RESULTS: "${{steps.testing-for-0.outputs.result}}"
+        TESTING-5_RESULTS: "${{steps.testing-5.outputs.result}}"
+        TESTING-FOR-NON-INTEGER_RESULTS: "${{steps.testing-for-non-integer.outputs.result}}"
+      with:
+        runners: testing-for-3,testing-for-0,testing-5,testing-for-non-integer
